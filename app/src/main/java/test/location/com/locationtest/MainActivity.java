@@ -30,5 +30,46 @@ public class MainActivity extends AppCompatActivity implements GooglePlayService
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        currentLocationBtn.setOnClickListener(this);
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            showGPSEnableDialog();
+        }
+    }
+
+    protected void startLocationTracking() {
+        stopLocationTracking();
+        playService = new GooglePlayService(this);
+        playService.setLocationUpdateListener(this);
+    }
+
+    protected void showGPSEnableDialog() {
+        stopLocationTracking();
+        playService = new GooglePlayService(this);
+        playService.checkLocationSettings();
+    }
+
+    protected void stopLocationTracking() {
+        if (playService != null) {
+            playService.stopClientConnection();
+            playService = null;
+        }
+    }
+
+    @Override
+    public void onLocationUpdate(Location location) {
+        currentLocation = location;
+        stopLocationTracking();
+        Logger.logError("GPS", "Lat : " + currentLocation.getLatitude() + " Long : " + currentLocation.getLongitude() + " Accuracy : " + currentLocation.getAccuracy());
+        currentLocationTxt.setText("Lat : " + currentLocation.getLatitude() + " Long : " + currentLocation.getLongitude() + " Accuracy : " + currentLocation.getAccuracy());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.currentLocationBtn:
+                startLocationTracking();
+                break;
+        }
     }
 }
